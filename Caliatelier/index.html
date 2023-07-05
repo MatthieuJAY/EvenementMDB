@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des événements</title>
+   
+</head>
+<body>
+    <h1>Liste des événements</h1>
+
+    <!-- Formulaire de sélection de la plage horaire -->
+    <form id="filterForm">
+        <label for="startDate">Date de début :</label>
+        <input type="date" id="startDate" name="startDate">
+
+        <label for="endDate">Date de fin :</label>
+        <input type="date" id="endDate" name="endDate">
+
+        <button type="submit">Filtrer</button>
+    </form>
+
+    <div id="events"></div>
+
+    <script>
+        // Fonction pour récupérer les événements depuis l'API
+        function getEvents(startDate, endDate) {
+            fetch('api.php?startDate=' + startDate + '&endDate=' + endDate)
+                .then(response => response.json())
+                .then(events => {
+                    // Appeler la fonction pour afficher les événements sur la page
+                    displayEvents(events);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des événements :', error);
+                });
+        }
+
+        // Fonction pour afficher les événements sur la page
+        function displayEvents(events) {
+            const eventsContainer = document.getElementById('events');
+            eventsContainer.innerHTML = ''; // Réinitialiser le contenu
+
+            events.forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.className = 'event';
+
+                const titleElement = document.createElement('h2');
+                titleElement.textContent = event.title;
+                eventElement.appendChild(titleElement);
+
+                const locationElement = document.createElement('p');
+                locationElement.textContent = 'Lieu : ' + event.location;
+                eventElement.appendChild(locationElement);
+
+                const dateElement = document.createElement('p');
+                dateElement.textContent = 'Date : ' + event.date;
+                eventElement.appendChild(dateElement);
+
+                const timeElement = document.createElement('p');
+                timeElement.textContent = 'Horaire : ' + event.time;
+                eventElement.appendChild(timeElement);
+
+                const imageElement = document.createElement('img');
+                imageElement.src = event.image;
+                eventElement.appendChild(imageElement);
+
+                const descriptionElement = document.createElement('p');
+                descriptionElement.textContent = event.description;
+                eventElement.appendChild(descriptionElement);
+
+                eventsContainer.appendChild(eventElement);
+            });
+        }
+
+        // Fonction pour définir automatiquement la date de fin une semaine après la date de début
+        function setDefaultEndDate() {
+            const startDate = document.getElementById('startDate').value;
+            if (startDate) {
+                const startDateObj = new Date(startDate);
+                const endDateObj = new Date(startDateObj.getTime() + (7 * 24 * 60 * 60 * 1000)); // Ajouter une semaine (7 jours)
+                const endDateInput = document.getElementById('endDate');
+                endDateInput.value = endDateObj.toISOString().split('T')[0];
+            }
+        }
+
+        // Gérer la soumission du formulaire
+        document.getElementById('filterForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Empêcher l'envoi du formulaire
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // Vérifier si les dates sont valides
+            if (startDate && endDate) {
+                getEvents(startDate, endDate);
+            } else {
+                alert('Veuillez sélectionner une date de début et une date de fin.');
+            }
+        });
+
+        // Définir la date de fin par défaut une semaine après la date de début lors du changement de la date de début
+        document.getElementById('startDate').addEventListener('change', setDefaultEndDate);
+    </script>  
+    <footer>
+        <a href="add_event.php" class="btn">Ajouter un événement</a>
+    </footer>
+</body>
+</html>
