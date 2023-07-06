@@ -39,7 +39,7 @@
 <?php
 require_once('config.php');
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 if ($conn->connect_error) {
     die("Échec de la connexion à la base de données : " . $conn->connect_error);
 }
@@ -71,3 +71,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Fermeture de la connexion à la base de données
 $conn->close();
 ?>
+
+
+
