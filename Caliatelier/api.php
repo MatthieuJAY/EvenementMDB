@@ -24,7 +24,9 @@ if (isset($_GET['startDate']) && isset($_GET['endDate'])) {
     $sql = "SELECT * FROM events";
     $stmt = $db->prepare($sql);
 }
-
+//  Construire la requête SQL avec la conditionWHERE pour filtrer les événements par plage horaire
+$sql = "SELECT  * FROM events WHERE date BETWEEN :startDate AND  :endDate ORDER BY date";
+$stmt = $db->prepare($sql);
 // Exécuter la requête SQL
 $stmt->execute();
 

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Liste des événements</title>
-   
 </head>
 <body>
-    <h1>Liste des événements</h1>
+<h1>Agenda</h1>
 
     <!-- Formulaire de sélection de la plage horaire -->
     <form id="filterForm">
@@ -35,43 +34,61 @@
                 });
         }
 
-        // Fonction pour afficher les événements sur la page
         function displayEvents(events) {
-            const eventsContainer = document.getElementById('events');
-            eventsContainer.innerHTML = ''; // Réinitialiser le contenu
+    const eventsContainer = document.getElementById('events');
+    eventsContainer.innerHTML = ''; // Réinitialiser le contenu
 
-            events.forEach(event => {
-                const eventElement = document.createElement('div');
-                eventElement.className = 'event';
+    let previousDate = null; // Variable to store the previous date
 
-                const titleElement = document.createElement('h2');
-                titleElement.textContent = event.title;
-                eventElement.appendChild(titleElement);
+    events.forEach(event => {
+        const eventElement = document.createElement('div');
+        eventElement.className = 'event';
 
-                const locationElement = document.createElement('p');
-                locationElement.textContent = 'Lieu : ' + event.location;
-                eventElement.appendChild(locationElement);
+        const currentDate = new Date(event.date);
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        const dateString = currentDate.toLocaleDateString('fr-FR', options);
 
-                const dateElement = document.createElement('p');
-                dateElement.textContent = 'Date : ' + event.date;
-                eventElement.appendChild(dateElement);
-
-                const timeElement = document.createElement('p');
-                timeElement.textContent = 'Horaire : ' + event.time;
-                eventElement.appendChild(timeElement);
-
-                const imageElement = document.createElement('img');
-                imageElement.src = event.image;
-                eventElement.appendChild(imageElement);
-
-                const descriptionElement = document.createElement('p');
-                descriptionElement.textContent = event.description;
-                eventElement.appendChild(descriptionElement);
-
-                eventsContainer.appendChild(eventElement);
-            });
+        // Check if the current date is the same as the previous date
+        if (dateString !== previousDate) {
+            const dateHeader = document.createElement('h2');
+            dateHeader.textContent = dateString;
+            eventElement.appendChild(dateHeader);
+            previousDate = dateString; // Update the previous date
         }
 
+        const titleElement = document.createElement('h3'); // Use <h3> for event titles
+        titleElement.textContent = event.title;
+        eventElement.appendChild(titleElement);
+
+        const locationElement = document.createElement('p');
+        locationElement.textContent = 'Lieu : ' + event.location;
+        eventElement.appendChild(locationElement);
+
+        // Check if the time is not "0:00:00" before displaying it
+        if (event.time !== "0:00:00") {
+            const timeElement = document.createElement('p');
+            timeElement.textContent = 'Horaire : ' + event.time;
+            eventElement.appendChild(timeElement);
+        }
+
+        // Check if the distance is available and add it to the event details
+        if (event.distance) {
+            const distanceElement = document.createElement('p');
+            distanceElement.textContent = 'Distance : ' + event.distance + ' km';
+            eventElement.appendChild(distanceElement);
+        }
+
+        const imageElement = document.createElement('img');
+        imageElement.src = event.image;
+        eventElement.appendChild(imageElement);
+
+        const descriptionElement = document.createElement('p');
+        descriptionElement.textContent = event.description;
+        eventElement.appendChild(descriptionElement);
+
+        eventsContainer.appendChild(eventElement);
+    });
+}
         // Fonction pour définir automatiquement la date de fin une semaine après la date de début
         function setDefaultEndDate() {
             const startDate = document.getElementById('startDate').value;
