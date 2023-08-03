@@ -3,123 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <title>Liste des événements</title>
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
 <h1>Agenda</h1>
 
-    <!-- Formulaire de sélection de la plage horaire -->
-    <form id="filterForm">
-        <label for="startDate">Date de début :</label>
-        <input type="date" id="startDate" name="startDate">
+<!-- Formulaire de sélection de la plage horaire -->
+<form id="filterForm">
+    <label for="startDate">Date de début :</label>
+    <input type="date" id="startDate" name="startDate">
 
-        <label for="endDate">Date de fin :</label>
-        <input type="date" id="endDate" name="endDate">
+    <label for="endDate">Date de fin :</label>
+    <input type="date" id="endDate" name="endDate">
 
-        <button type="submit">Filtrer</button>
-    </form>
+    <button type="submit">Filtrer</button>
+</form>
 
-    <div id="events"></div>
+<div id="events"></div>
 
-    <script>
-        // Fonction pour récupérer les événements depuis l'API
-        function getEvents(startDate, endDate) {
-            fetch('api.php?startDate=' + startDate + '&endDate=' + endDate)
-                .then(response => response.json())
-                .then(events => {
-                    // Appeler la fonction pour afficher les événements sur la page
-                    displayEvents(events);
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération des événements :', error);
-                });
-        }
+<script>
+    // Fonction pour récupérer les événements depuis l'API
+    function getEvents(startDate, endDate) {
+        fetch('api.php?startDate=' + startDate + '&endDate=' + endDate)
+            .then(response => response.json())
+            .then(events => {
+                displayEvents(events);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des événements :', error);
+            });
+    }
 
-        function displayEvents(events) {
-    const eventsContainer = document.getElementById('events');
-    eventsContainer.innerHTML = ''; // Réinitialiser le contenu
+    function displayEvents(events) {
+        const eventsContainer = document.getElementById('events');
+        eventsContainer.innerHTML = ''; 
+        // Variable to store the previous date
+        let previousDate = null; 
 
-    let previousDate = null; // Variable to store the previous date
+        events.forEach(event => {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'event';
 
-    events.forEach(event => {
-        const eventElement = document.createElement('div');
-        eventElement.className = 'event';
+            const currentDate = new Date(event.date);
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const dateString = currentDate.toLocaleDateString('fr-FR', options);
 
-        const currentDate = new Date(event.date);
-        const options = { weekday: 'long', day: 'numeric', month: 'long' };
-        const dateString = currentDate.toLocaleDateString('fr-FR', options);
-
-        // Check if the current date is the same as the previous date
-        if (dateString !== previousDate) {
-            const dateHeader = document.createElement('h2');
-            dateHeader.textContent = dateString;
-            eventElement.appendChild(dateHeader);
-            previousDate = dateString; // Update the previous date
-        }
-
-        const titleElement = document.createElement('h3'); // Use <h3> for event titles
-        titleElement.textContent = event.title;
-        eventElement.appendChild(titleElement);
-
-        const locationElement = document.createElement('p');
-        locationElement.textContent = 'Lieu : ' + event.location;
-        eventElement.appendChild(locationElement);
-
-        // Check if the time is not "0:00:00" before displaying it
-        if (event.time !== "0:00:00") {
-            const timeElement = document.createElement('p');
-            timeElement.textContent = 'Horaire : ' + event.time;
-            eventElement.appendChild(timeElement);
-        }
-
-        // Check if the distance is available and add it to the event details
-        if (event.distance) {
-            const distanceElement = document.createElement('p');
-            distanceElement.textContent = 'Distance : ' + event.distance + ' km';
-            eventElement.appendChild(distanceElement);
-        }
-
-        const imageElement = document.createElement('img');
-        imageElement.src = event.image;
-        eventElement.appendChild(imageElement);
-
-        const descriptionElement = document.createElement('p');
-        descriptionElement.textContent = event.description;
-        eventElement.appendChild(descriptionElement);
-
-        eventsContainer.appendChild(eventElement);
-    });
-}
-        // Fonction pour définir automatiquement la date de fin une semaine après la date de début
-        function setDefaultEndDate() {
-            const startDate = document.getElementById('startDate').value;
-            if (startDate) {
-                const startDateObj = new Date(startDate);
-                const endDateObj = new Date(startDateObj.getTime() + (7 * 24 * 60 * 60 * 1000)); // Ajouter une semaine (7 jours)
-                const endDateInput = document.getElementById('endDate');
-                endDateInput.value = endDateObj.toISOString().split('T')[0];
+            // Check if the current date is the same as the previous date
+            if (dateString !== previousDate) {
+                const dateHeader = document.createElement('h2');
+                dateHeader.textContent = dateString;
+                eventElement.appendChild(dateHeader);
+                previousDate = dateString; // Update the previous date
             }
-        }
+            // Use <h3> for event titles
+            const titleElement = document.createElement('h3'); 
+            titleElement.textContent = event.title;
+            eventElement.appendChild(titleElement);
 
-        // Gérer la soumission du formulaire
-        document.getElementById('filterForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Empêcher l'envoi du formulaire
+            const locationDateElement = document.createElement('p');
+            const formattedDate = currentDate.toLocaleDateString('fr-FR');
+            const formattedTime = formatTime(event.time);
+            const locationAndTime = `A ${event.location} (${event.distance} km) ${formattedTime}`;
+            locationDateElement.textContent = locationAndTime;
+            eventElement.appendChild(locationDateElement);
 
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
+            const imageElement = document.createElement('img');
+            imageElement.src = event.image;
+            eventElement.appendChild(imageElement);
 
-            // Vérifier si les dates sont valides
-            if (startDate && endDate) {
-                getEvents(startDate, endDate);
-            } else {
-                alert('Veuillez sélectionner une date de début et une date de fin.');
-            }
+            const descriptionElement = document.createElement('p');
+            descriptionElement.textContent = event.description;
+            eventElement.appendChild(descriptionElement);
+
+            eventsContainer.appendChild(eventElement);
         });
+    }
 
-        // Définir la date de fin par défaut une semaine après la date de début lors du changement de la date de début
-        document.getElementById('startDate').addEventListener('change', setDefaultEndDate);
-    </script>  
-    <footer>
-        <a href="add_event.php" class="btn">Ajouter un événement</a>
-    </footer>
+    // Function to automatically get the end date one week after the start date
+    function setDefaultEndDate() {
+        const startDate = document.getElementById('startDate').value;
+        if (startDate) {
+            const startDateObj = new Date(startDate);
+            const endDateObj = new Date(startDateObj.getTime() + (7 * 24 * 60 * 60 * 1000)); // +1 week 
+            const endDateInput = document.getElementById('endDate');
+            endDateInput.value = endDateObj.toISOString().split('T')[0];
+        }
+    }
+    // By default get then end date = start date +1 week 
+    document.getElementById('startDate').addEventListener('change', setDefaultEndDate);
+
+   
+    document.getElementById('filterForm').addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // Check dates
+        if (startDate && endDate) {
+            getEvents(startDate, endDate);
+        } else {
+            alert('Veuillez sélectionner une date de début et une date de fin.');
+        }
+    });
+
+    
+
+    // Get the actual date
+    const currentDate = new Date();
+    const firstDayOfWeek = currentDate.getDate() - currentDate.getDay() + (currentDate.getDay() === 0 ? -6 : 1);
+    const startDateOfWeek = new Date(currentDate.setDate(firstDayOfWeek));
+    const endDateOfWeek = new Date(startDateOfWeek);
+    endDateOfWeek.setDate(endDateOfWeek.getDate() + 6);
+
+    
+    document.getElementById('startDate').value = startDateOfWeek.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endDateOfWeek.toISOString().split('T')[0];
+
+    
+    getEvents(startDateOfWeek.toISOString().split('T')[0], endDateOfWeek.toISOString().split('T')[0]);
+
+    function formatTime(time) {
+        // Display time at HH:mm format and don't return it if time === 00:00:00
+        return time !== "00:00:00" ? time.substring(0, 5) : "";
+    }
+</script>  
+<footer>
+    <a href="add_event.php" class="btn">Ajouter un événement</a>
+</footer>
 </body>
 </html>
